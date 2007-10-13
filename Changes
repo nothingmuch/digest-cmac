@@ -1,0 +1,12 @@
+Revision history for Perl extension Digest::CMAC.
+
+0.02  Mon Jul 17 04:11:48 JST 2006
+	- add 64bit block cipher tests.
+	- fixed blocksize check.
+	- add methods: addfile, add_bits
+	- fixed b64digest result string.
+
+0.01  Sat Jul 15 20:57:12 JST 2006
+	- original version; created by h2xs 1.23 with options
+		-n Digest::OMAC -X
+
