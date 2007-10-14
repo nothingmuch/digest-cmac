@@ -53,6 +53,11 @@ sub bv_xor {
 sub new {
 	my ( $class, $key, $cipher, @args ) = @_;
 
+	if ( ref $key ) {
+		$cipher = $key;
+		$key = undef;
+	}
+
     $cipher ||= 'Crypt::Rijndael';
 
     my $self = bless {
