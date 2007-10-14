@@ -5,50 +5,7 @@ use warnings;
 use Carp;
 use MIME::Base64;
 
-use Bit::Vector;
-
-our $VERSION = '0.02';
 our $DEBUG = 0;
-
-sub new_bv {
-	my ( $blocksize ) = @_;
-
-	Bit::Vector->new( $blocksize * 8 );
-}
-
-sub from_bin {
-	my ( $bytes, $blocksize ) = @_;
-
-	$blocksize ||= length($bytes);
-
-	$blocksize *= 8;
-
-	my $bv = Bit::Vector->new( $blocksize );
-
-	$bv->Block_Store($bytes);
-
-	return $bv;
-}
-
-sub to_bin {
-	my ( $bv ) = @_;
-
-	return $bv->Block_Read;
-}
-
-sub bv_xor {
-	my ( @vecs ) = @_;
-	
-	my $bv = shift @vecs;
-   
-	while ( @vecs ) {
-		my $tmp = Bit::Vector->new($bv->Size);
-		$tmp->Xor( $bv, shift @vecs );
-		$bv = $tmp;
-	}
-
-	return $bv;
-}
 
 sub new {
 	my ( $class, $key, $cipher, @args ) = @_;
@@ -92,8 +49,8 @@ sub add {
 	my $unenc_y;
 
 	foreach my $block ( @blocks ) {
-		$unenc_y = bv_xor( from_bin($block), $Y );
-		$Y = from_bin( $c->encrypt( to_bin( $unenc_y ) ) ); # Y[i] = E( M[1] xor Y[-1] )
+		$unenc_y = $block ^ $Y;
+		$Y = $c->encrypt( $unenc_y ); # Y[i] = E( M[1] xor Y[-1] )
 	}
 
 	$self->{unenc_Y} = $unenc_y;
@@ -113,26 +70,22 @@ sub digest {
 	my $X;
 
 	if ( length($last_block) or !$self->{ix} ) {
-		my $padded = from_bin( pack("B*", substr( unpack("B*", $last_block) . "1" . ( '0' x ($blocksize * 8) ), 0, $blocksize * 8 ) ) );
+		my $padded = pack("B*", substr( unpack("B*", $last_block) . "1" . ( '0' x ($blocksize * 8) ), 0, $blocksize * 8 ) );
 
-		$X = bv_xor(
-			$padded,
-			$self->{Y},
-			$self->{Lu2},
-		);
+		$X = $padded ^ $self->{Y} ^ $self->{Lu2};
 	} else {
-		$X = bv_xor( $self->{unenc_Y}, $self->{Lu} );
+		$X = $self->{unenc_Y} ^ $self->{Lu};
 	}
 
 	$self->reset;
 
-	return $c->encrypt( to_bin( $X ) );
+	return $c->encrypt( $X );
 }
 	
 sub reset {
     my $self = shift;
     my $blocksize = $self->{cipher}->blocksize;
-    $self->{Y} = new_bv($blocksize);
+    $self->{Y} = "\x00" x $blocksize;
 	$self->{saved_block} = '';
     return $self;
 }
@@ -155,23 +108,23 @@ sub _init {
 
     my $blocksize = $c->blocksize;
 
-	$self->{Y} = new_bv($blocksize);
+	my $zero = "\x00" x $blocksize;
 
-	my $zero = pack("x$blocksize", 0);
+	$self->{Y} = $zero;
 	
-    my $L = from_bin( $self->{cipher}->encrypt($zero) );
+    my $L = $self->{cipher}->encrypt($zero);
 	
-    if ($DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack "H*", to_bin $L }
+    if ($DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack "H*", $L }
 
 	my $constant = $self->_constant($blocksize);
 
 	$self->{Lu} = $self->_shift_l( $L, $constant );
 
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack "H*", to_bin $self->{Lu}; }
+    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack "H*", $self->{Lu}; }
 
 	$self->{Lu2} = $self->_shift_l( $self->{Lu}, $constant );
 
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack "H*", to_bin $self->{Lu2}; }
+    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack "H*", $self->{Lu2}; }
 
     return $self;
 }
@@ -180,9 +133,9 @@ sub _constant {
 	my ( $self, $blocksize ) = @_;
 
 	if ( $blocksize == 16 ) { # 128
-		return from_bin( ("\x00" x 15) . "\x87", $blocksize );
+		return ( ("\x00" x 15) . "\x87" );
 	} elsif ( $blocksize == 8 ) { # 64
-		return from_bin( ("\x00" x 7 ) . "\x1b", $blocksize );
+		return ( ("\x00" x 7 ) . "\x1b" );
 	} else {
 		die "Blocksize $blocksize is not supported by OMAC";
 	}

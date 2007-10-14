@@ -3,7 +3,7 @@ package Digest::CMAC;
 use base qw(Digest::OMAC::Base);
 
 use strict;
-#use warnings;
+use warnings;
 use Carp;
 use MIME::Base64;
 
@@ -13,19 +13,15 @@ our $DEBUG => 0;
 sub _shift_l {
 	my ( $self, $L, $constant ) = @_;
 
-	my $L = $L->Clone;
+	# used to do Bit::Vector's shift_left but that's broken
+	my ( $msb, $tail ) = unpack("a a*", unpack("B*",$L));
 
-	# FIXME it's broken
-	#my $msb = $L->msb;
-	my $msb = substr( unpack("B*", Digest::OMAC::Base::to_bin($L) ), 0, 1);
-
-	# shift_left seems broken too... *sigh*
-	$L = Digest::OMAC::Base::from_bin(pack("B*",substr(unpack("B*", Digest::OMAC::Base::to_bin($L)) . "0", 1)));
+	my $Lt = pack("B*", $tail . "0");
 
 	if ( $msb ) {
-		return Digest::OMAC::Base::bv_xor( $L, $constant );
+		return $Lt ^ $constant;
 	} else {
-		return $L;
+		return $Lt;
 	}
 }
 
