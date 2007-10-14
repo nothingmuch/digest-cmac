@@ -1,5 +1,7 @@
 package Digest::CMAC;
 
+use base qw(Digest::OMAC::Base);
+
 use strict;
 #use warnings;
 use Carp;
@@ -8,204 +10,23 @@ use MIME::Base64;
 our $VERSION = '0.03';
 our $DEBUG => 0;
 
+sub _shift_l {
+	my ( $self, $L, $constant ) = @_;
 
-sub new {
-    my $class = shift;
-    my $key = shift;
-    my $cipher = shift;
-    $cipher ||= 'Crypt::Rijndael';
+	my $L = $L->Clone;
 
-    my $self = bless {
-        cipher => undef,
-        key => '',
-        ix  => 0,
-        iv  => '',
-        Lu  => '',
-        Lu2 => '',
-    }, $class;
-    return $self->_init($key, $cipher);
-}
+	# FIXME it's broken
+	#my $msb = $L->msb;
+	my $msb = substr( unpack("B*", Digest::OMAC::Base::to_bin($L) ), 0, 1);
 
-sub add {
-    my $self = shift;
-    my @msg = unpack 'C*', join '', @_;
-    my $in_l = length join '', @_;
-    my $blocksize = $self->{cipher}->blocksize;
-    my @iv = unpack 'C*', $self->{iv};
+	# shift_left seems broken too... *sigh*
+	$L = Digest::OMAC::Base::from_bin(pack("B*",substr(unpack("B*", Digest::OMAC::Base::to_bin($L)) . "0", 1)));
 
-    my $m_pos = 0;
-    if ($in_l < $blocksize - $self->{ix}) {
-        while ($in_l--) {
-            $iv[$self->{ix}++] ^= $msg[$m_pos++];
-        }
-        if (scalar @msg > 0) {
-            $self->{iv} = to_bin(\@iv);
-        }
-        return $self;
-    }
-    if ($self->{ix}) {
-        while ($self->{ix} < $blocksize) {
-            --$in_l;
-            $iv[$self->{ix}++] ^= $msg[0];
-        }
-        @iv = unpack 'C*', $self->{cipher}->encrypt(to_bin(\@iv));
-    }
-    while ($in_l > $blocksize) {
-        for (my $i = 0; $i < $blocksize/1; $i++) {
-            $iv[$i] ^= $msg[$i];
-        }
-        @iv = unpack 'C*', $self->{cipher}->encrypt(to_bin(\@iv));
-        @msg = splice @msg, $blocksize;
-        $in_l -= $blocksize;
-    }
-    for (my $i = 0; $i < $in_l; $i++) {
-        $iv[$i] ^= $msg[$i];
-    }
-    $self->{iv} = to_bin(\@iv);
-    $self->{ix} = $in_l;
-
-    return $self;
-}
-
-sub digest {
-    my $self = shift;
-    my $blocksize = $self->{cipher}->blocksize;
-    my @iv = unpack 'C*', $self->{iv};
-    my @Lu = unpack 'C*', $self->{Lu};
-    my @Lu2 = unpack 'C*', $self->{Lu2};
-
-    if ($self->{ix} != $blocksize) {
-        $iv[$self->{ix}] ^= 0x80;
-        for (my $i = 0; $i < $blocksize/1; $i++) {
-            $iv[$i] ^= $Lu2[$i];
-        }
-    }
-    else {
-        for (my $i = 0; $i < $blocksize/1; $i++) {
-            $iv[$i] ^= $Lu[$i];
-        }
-    }
-    my $result = $self->{cipher}->encrypt(to_bin(\@iv));
-    $self->reset;
-    $result;
-}
-
-sub reset {
-    my $self = shift;
-    my $blocksize = $self->{cipher}->blocksize;
-
-    $self->{ix} = 0;
-    $self->{iv} = pack "x$blocksize", 0;
-    return $self;
-}
-
-
-sub _init {
-    my $self = shift;
-    my $key = shift;
-    my $cipher = shift;
-
-    eval "require $cipher; 1;"
-        or croak "Couldn't load $cipher: $@";
-    $self->{cipher} = $cipher->new($key);
-    my $blocksize = $self->{cipher}->blocksize;
-
-    $self->{iv} = pack "x$blocksize", 0;
-    my $L = pack "x$blocksize", 0;
-    # init L
-    $L = $self->{cipher}->encrypt($L);
-    $self->{ix} = 0;
-    if ($DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack 'H*', $L; }
-
-    # init Lu
-    my @L = unpack 'C*', $L;
-    my @Lu = unpack 'C*', pack "x$blocksize", 0;
-    my $cond = $L[0] & 0x80;
-    $Lu[0] = $L[0] << 1;
-    for (my $i = 1; $i < $blocksize; $i++) {
-        $Lu[$i-1] |= $L[$i] >> 7;
-        $Lu[$i]    = $L[$i] << 1;
-        $Lu[$i-1] &= 0xff;
-        $Lu[$i]   &= 0xff;
-    }
-    if ($cond) {
-        $Lu[$blocksize-1] ^= 0x87;
-    }
-    $self->{Lu} = to_bin(\@Lu);
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack 'H*', $self->{Lu}; }
-
-    # init Lu2
-    my @Lu2 = unpack 'C*', pack "x$blocksize", 0;
-    $cond = $Lu[0] & 0x80;
-    $Lu2[0] = $Lu[0] << 1;
-    $Lu2[0] &= 0xff;
-    for (my $i = 1; $i < $blocksize; $i++) {
-        $Lu2[$i-1] |= $Lu[$i] >> 7;
-        $Lu2[$i]    = $Lu[$i] << 1;
-        $Lu2[$i-1] &= 0xff;
-        $Lu2[$i]   &= 0xff;
-    }
-    if ($cond) {
-        $Lu2[$blocksize-1] ^= 0x87;
-    }
-    $self->{Lu2} = to_bin(\@Lu2);
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack 'H*', $self->{Lu2}; }
-
-    return $self;
-}
-
-
-# support methods
-sub hexdigest {
-    return unpack 'H*', $_[0]->digest;
-}
-
-sub b64digest {
-    my $result = MIME::Base64::encode($_[0]->digest);
-    $result =~ s/=+$//;
-    return $result;
-}
-
-sub addfile {
-    my $self = shift;
-    my $handle = shift;
-    my $n;
-    my $buff = '';
-
-    while (($n = read $handle, $buff, 4*1024)) {
-        $self->add($buff);
-    }
-    unless (defined $n) {
-        croak "read failed: $!";
-    }
-    return $self;
-}
-
-sub add_bits {
-    my $self = shift;
-    my $bits;
-    my $nbits;
-
-    if (scalar @_ == 1) {
-        my $arg = shift;
-        $bits = pack 'B*', $arg;
-        $nbits = length $arg;
-    }
-    else {
-        $bits = shift;
-        $nbits = shift;
-    }
-    if (($nbits % 8) != 0) {
-        croak 'Number of bits must be multiple of 8 for this algorithm';
-    }
-    return $self->add(substr $bits, 0, $nbits/8);
-}
-
-
-# internal use function
-sub to_bin {
-    my $l = shift;
-    return pack 'C*', @$l;
+	if ( $msb ) {
+		return Digest::OMAC::Base::bv_xor( $L, $constant );
+	} else {
+		return $L;
+	}
 }
 
 1;
