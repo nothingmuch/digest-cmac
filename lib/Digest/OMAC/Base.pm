@@ -69,7 +69,7 @@ sub new {
 
 sub add {
 	my ( $self, @msg ) = @_;
-	my $msg = join('', $self->{saved_block}, @msg);
+	my $msg = join('', grep { defined } $self->{saved_block}, @msg);
 
 	$self->{ix} += length($msg);
 
