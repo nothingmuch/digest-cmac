@@ -10,3 +10,20 @@ use base qw(Digest::CMAC);
 __PACKAGE__;
 
 __END__
+
+=pod
+
+=head1 NAME
+
+Digest::OMAC1 - An alias for L<Digest::CMAC>
+
+=head1 SYNOPSIS
+
+	use Digest::OMAC1;
+
+	my $d = Digest::OMAC1->new( $key, $cipher );
+
+=head1 DESCRIPTIOn
+
+This module has an identical interface to L<Digest::CMAC>. The reason is that
+the same hash is known by both names.
