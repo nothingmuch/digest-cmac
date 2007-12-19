@@ -13,7 +13,7 @@ SKIP: {
 
     # empty string
     $cmac->add('');
-    ok($cmac->hexdigest eq '5a7bd28f44ea0101');
+    is($cmac->hexdigest, '9e8c23bbd1b826c1');
 
     # 8byte
     $cmac->add(pack 'H*', '6bc1bee22e409f96');
