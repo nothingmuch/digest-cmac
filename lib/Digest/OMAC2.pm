@@ -46,3 +46,22 @@ sub _lu2_constant {
 
 1;
 __END__
+
+=pod
+
+=head1 NAME
+
+Digest::OMAC2 - OMAC 2 implementation
+
+=head1 SYNOPSIS
+
+	use Digest::OMAC2;
+
+	my $d = Digest::OMAC2->new( $key, $cipher );
+
+=head1 DESCRIPTION
+
+OMAC 2 is a variant of the CMAC/OMAC 1 algorithm. The initialization routines
+are slightly different. OMAC2 actually precedes OMAC1, so
+L<Digest::CMAC>/L<Digest::OMAC1> is the reccomended version. Supposedly OMAC1
+was more rigorously analyzed.

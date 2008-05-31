@@ -25,5 +25,5 @@ Digest::OMAC1 - An alias for L<Digest::CMAC>
 
 =head1 DESCRIPTIOn
 
-This module has an identical interface to L<Digest::CMAC>. The reason is that
-the same hash is known by both names.
+This module has an identical interface to L<Digest::CMAC>. NIST dubbed OMAC 1
+"CMAC" when they reccomended it, much like L<Crypt::Rijndael> is known as AES.
