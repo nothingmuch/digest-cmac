@@ -118,9 +118,11 @@ Tetsu Iwata and Kaoru Kurosawa
 "Crypt::CMAC" was written by
 Hiroyuki OYAMA <oyama@module.jp>
 
+OMAC2 support added by Yuval Kogman
+
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Hiroyuki OYAMA
+Copyright (C) 2006 by Hiroyuki OYAMA, 2007 by Hiroyuki OYAMA, Yuval Kogman
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.6 or,
