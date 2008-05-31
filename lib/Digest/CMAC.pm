@@ -9,19 +9,9 @@ use MIME::Base64;
 
 our $VERSION = '0.03';
 
-sub _shift_l {
-	my ( $self, $L, $constant ) = @_;
-
-	# used to do Bit::Vector's shift_left but that's broken
-	my ( $msb, $tail ) = unpack("a a*", unpack("B*",$L));
-
-	my $Lt = pack("B*", $tail . "0");
-
-	if ( $msb ) {
-		return $Lt ^ $constant;
-	} else {
-		return $Lt;
-	}
+sub _lu2 {
+	my ( $self, $blocksize,  $L, $Lu ) = @_;
+	$self->_lu( $blocksize, $Lu );
 }
 
 1;

@@ -71,7 +71,6 @@ sub digest {
 
 	if ( length($last_block) or !$self->{ix} ) {
 		my $padded = pack("B*", substr( unpack("B*", $last_block) . "1" . ( '0' x ($blocksize * 8) ), 0, $blocksize * 8 ) );
-
 		$X = $padded ^ $self->{Y} ^ $self->{Lu2};
 	} else {
 		$X = $self->{unenc_Y} ^ $self->{Lu};
@@ -116,20 +115,38 @@ sub _init {
 	
     if (DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack "H*", $L }
 
-	my $constant = $self->_constant($blocksize);
-
-	$self->{Lu} = $self->_shift_l( $L, $constant );
+	$self->{Lu} = $self->_lu( $blocksize, $L );
 
     if (DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack "H*", $self->{Lu}; }
 
-	$self->{Lu2} = $self->_shift_l( $self->{Lu}, $constant );
+	$self->{Lu2} = $self->_lu2( $blocksize, $L, $self->{Lu} ); # for OMAC2 this is actually Lu^-1, not Lu^2, but we still call it Lu2
 
     if (DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack "H*", $self->{Lu2}; }
 
     return $self;
 }
 
-sub _constant {
+sub _lu {
+	my ( $self, $blocksize,  $L ) = @_;
+	$self->_shift_lu( $L, $self->_lu_constant($blocksize) );
+}
+
+sub _shift_lu {
+	my ( $self, $L, $constant ) = @_;
+
+	# used to do Bit::Vector's shift_left but that's broken
+	my ( $msb, $tail ) = unpack("a a*", unpack("B*",$L));
+
+	my $Lt = pack("B*", $tail . "0");
+
+	if ( $msb ) {
+		return $Lt ^ $constant;
+	} else {
+		return $Lt;
+	}
+}
+
+sub _lu_constant {
 	my ( $self, $blocksize ) = @_;
 
 	if ( $blocksize == 16 ) { # 128
@@ -139,6 +156,10 @@ sub _constant {
 	} else {
 		die "Blocksize $blocksize is not supported by OMAC";
 	}
+}
+
+sub _lu2 {
+	die "lu2 needs to be defined by subclass";
 }
 
 # support methods
