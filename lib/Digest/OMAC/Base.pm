@@ -192,7 +192,8 @@ __END__
 
 =head1 NAME
 
-Digest::OMAC::Base - The One-key CBC MAC message authentication code (base class for OMAC hashes)
+Digest::OMAC::Base - The One-key CBC MAC message authentication code (base
+class for OMAC hashes)
 
 =head1 SYNOPSIS
 
@@ -200,7 +201,7 @@ Digest::OMAC::Base - The One-key CBC MAC message authentication code (base class
 
 =head1 DESCRIPTION
 
-This module is used internally by L<Digest::CMAC>/L<Digest::OMAC1> and by in
-the future perhaps by L<Digest::OMAC2> (which does different shifting than
-OMAC1).
+This module is used internally by L<Digest::CMAC>/L<Digest::OMAC1> and
+L<Digest::OMAC2> (which does different shifting than OMAC1 but is otherwise the
+same).
 
