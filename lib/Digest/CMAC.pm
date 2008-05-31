@@ -8,7 +8,6 @@ use Carp;
 use MIME::Base64;
 
 our $VERSION = '0.03';
-our $DEBUG => 0;
 
 sub _shift_l {
 	my ( $self, $L, $constant ) = @_;
