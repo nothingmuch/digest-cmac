@@ -111,7 +111,6 @@ http://www.csrc.nist.gov/publications/nistpubs/800-38B/SP_800-38B.pdf
 
 =head1 AUTHOR
 
-
 OMAC designed and analyzed by
 Tetsu Iwata and Kaoru Kurosawa
 
