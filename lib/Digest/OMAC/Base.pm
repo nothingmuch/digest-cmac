@@ -5,7 +5,7 @@ use warnings;
 use Carp;
 use MIME::Base64;
 
-our $DEBUG = 0;
+use constant DEBUG => 0;
 
 sub new {
 	my ( $class, $key, $cipher, @args ) = @_;
@@ -114,17 +114,17 @@ sub _init {
 	
     my $L = $self->{cipher}->encrypt($zero);
 	
-    if ($DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack "H*", $L }
+    if (DEBUG) { printf STDERR qq{DEBUG >> L=%s\n}, unpack "H*", $L }
 
 	my $constant = $self->_constant($blocksize);
 
 	$self->{Lu} = $self->_shift_l( $L, $constant );
 
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack "H*", $self->{Lu}; }
+    if (DEBUG) { printf STDERR qq{DEBUG >> Lu=%s\n}, unpack "H*", $self->{Lu}; }
 
 	$self->{Lu2} = $self->_shift_l( $self->{Lu}, $constant );
 
-    if ($DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack "H*", $self->{Lu2}; }
+    if (DEBUG) { printf STDERR qq{DEBUG >> Lu2=%s\n}, unpack "H*", $self->{Lu2}; }
 
     return $self;
 }
