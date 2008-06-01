@@ -3,6 +3,8 @@ Revision history for Perl extension Digest::CMAC.
 0.04
 	- The block splitting used a 5.8 feature (unpack groups). Added a slower
 	  regex fallback for older perls.
+	- Various other minor fixes means we're compat down to 5.004. Ancient deps
+	  must be installed thougj, virtually all of them require 5.6 nowadays.
 
 0.03
 	- Added OMAC2 support and made OMAC1 into an alias for CMAC
