@@ -9,7 +9,7 @@ use MIME::Base64;
 
 use vars qw($VERSION);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 sub _lu2 {
 	my ( $self, $blocksize,  $L, $Lu ) = @_;
