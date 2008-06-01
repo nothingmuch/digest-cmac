@@ -1,6 +1,6 @@
 use Test::More tests => 27;
 
-foreach my $class qw(Digest::CMAC Digest::OMAC1 Digest::OMAC2) {
+foreach my $class ( qw(Digest::CMAC Digest::OMAC1 Digest::OMAC2) ) {
 	use_ok($class);
 	can_ok( $class, 'new');
 	can_ok( $class, 'add');

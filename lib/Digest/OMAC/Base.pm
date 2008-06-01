@@ -1,7 +1,7 @@
 package Digest::OMAC::Base;
 
 use strict;
-use warnings;
+#use warnings;
 use Carp;
 use MIME::Base64;
 

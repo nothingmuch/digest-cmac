@@ -3,11 +3,13 @@ package Digest::CMAC;
 use base qw(Digest::OMAC::Base);
 
 use strict;
-use warnings;
+#use warnings;
 use Carp;
 use MIME::Base64;
 
-our $VERSION = '0.03';
+use vars qw($VERSION);
+
+$VERSION = '0.03';
 
 sub _lu2 {
 	my ( $self, $blocksize,  $L, $Lu ) = @_;
