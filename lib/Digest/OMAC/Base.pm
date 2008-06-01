@@ -6,6 +6,7 @@ use Carp;
 use MIME::Base64;
 
 use constant DEBUG => 0;
+use constant UNPACK_CAN_GROUP => $] >= 5.008;
 
 sub new {
 	my ( $class, $key, $cipher, @args ) = @_;
@@ -33,7 +34,9 @@ sub add {
 	my $c = $self->{cipher};
     my $blocksize = $c->blocksize;
 
-	my @blocks = unpack "(a$blocksize)*", $msg;
+	my @blocks = UNPACK_CAN_GROUP
+		? unpack("(a$blocksize)*", $msg)
+		: ( $msg =~ /(.{1,$blocksize})/sg );
 
 	return unless @blocks;
 
