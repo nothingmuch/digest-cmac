@@ -1,5 +1,9 @@
 Revision history for Perl extension Digest::CMAC.
 
+0.04
+	- The block splitting used a 5.8 feature (unpack groups). Added a slower
+	  regex fallback for older perls.
+
 0.03
 	- Added OMAC2 support and made OMAC1 into an alias for CMAC
 	- Significant speed improvements (about 130x faster)
