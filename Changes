@@ -4,6 +4,8 @@ Revision history for Perl extension Digest::CMAC.
 	- Added OMAC2 support and made OMAC1 into an alias for CMAC
 	- Significant speed improvements (about 130x faster)
 	- Cipher parameter can be an object, too
+	- <forgot to changelog this in 0.03>: fixed 64bit blocksize constants to
+	  match the spec and changed the test accordingly
 
 0.02  Mon Jul 17 04:11:48 JST 2006
 	- add 64bit block cipher tests.
