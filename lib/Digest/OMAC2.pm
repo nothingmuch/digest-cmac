@@ -7,9 +7,6 @@ use strict;
 use Carp;
 use MIME::Base64;
 
-our $VERSION = '0.03';
-our $DEBUG => 0;
-
 # we still call it Lu2 even though it's actually no longer squared ;-)
 
 sub _lu2 {
